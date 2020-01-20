@@ -19,7 +19,7 @@ module.exports.io = socketIO(server);
 
 const tours = JSON.parse(fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`));
 
-app.get('/api/v1/tours', (req, res) => {
+const getAllTours = (req, res) => {
     res.status(200).json({
         status: 'success',
         results: tours.length,
@@ -27,67 +27,13 @@ app.get('/api/v1/tours', (req, res) => {
             tours
         }
     })
-});
+};
 
-app.get('/api/v1/tours/:id', (req, res) => {
-
-    const id = req.params.id * 1;
-    const tour = tours.find(element => element.id === id);
-
-    if (!tour && typeof tour === 'undefined' || id > tours.length) {
-        res.status(404).json({
-            status: 'failed',
-            message: 'The tour was not found'
-        })
-    } else {
-        res.status(200).json({
-            status: 'success',
-            data: {
-                tour
-            }
-        })
-    }
-
-});
-
-app.patch('/api/v1/tours/:id', (req, res) => {
-
-    const id = req.params.id * 1;
-    if ( id > tours.length) {
-        res.status(404).json({
-            status: 'failed',
-            message: 'The tour was not found'
-        })
-    } else {
-        res.status(200).json({
-            status: 'success',
-            message: 'Updated'
-        })
-    }
-});
-app.delete('/api/v1/tours/:id', (req, res) => {
-
-    const id = req.params.id * 1;
-    if ( id > tours.length) {
-        res.status(404).json({
-            status: 'failed',
-            message: 'The tour was not found'
-        })
-    } else {
-        res.status(200).json({
-            status: 'success',
-            data: null
-        })
-    }
-});
-
-app.post('/api/v1/tours', (req, res) => {
+const createNewTour = (req, res) => {
     const newId = tours[tours.length -1].id + 1;
     const newTour = Object.assign({id: newId}, req.body);
-
     if (newTour && typeof newTour !== 'undefined'){
         tours.push(newTour);
-
         fs.writeFile(`${__dirname}/dev-data/data/tours-simple.json`, JSON.stringify(tours), error => {
             if (error && typeof error !== 'undefined'){
                 res.status(500).json({
@@ -109,8 +55,65 @@ app.post('/api/v1/tours', (req, res) => {
             message: 'The creation was failed'
         })
     }
+};
 
-});
+const getTour = (req, res) => {
+    const id = req.params.id * 1;
+    const tour = tours.find(element => element.id === id);
+    if (!tour && typeof tour === 'undefined' || id > tours.length) {
+        res.status(404).json({
+            status: 'failed',
+            message: 'The tour was not found'
+        })
+    } else {
+        res.status(200).json({
+            status: 'success',
+            data: {
+                tour
+            }
+        })
+    }
+};
+
+const updateTour = (req, res) => {
+    const id = req.params.id * 1;
+    if ( id > tours.length) {
+        res.status(404).json({
+            status: 'failed',
+            message: 'The tour was not found'
+        })
+    } else {
+        res.status(200).json({
+            status: 'success',
+            message: 'Updated'
+        })
+    }
+};
+
+const deleteTour = (req, res) => {
+    const id = req.params.id * 1;
+    if ( id > tours.length) {
+        res.status(404).json({
+            status: 'failed',
+            message: 'The tour was not found'
+        })
+    } else {
+        res.status(200).json({
+            status: 'success',
+            data: null
+        })
+    }
+};
+
+app.route('/api/v1/tours')
+    .get(getAllTours)
+    .post(createNewTour);
+
+
+app.route('/api/v1/tours/:id')
+    .get(getTour)
+    .patch(updateTour)
+    .delete(deleteTour);
 
 server.listen(port, (err) => {
     if (err) throw new Error(err);
