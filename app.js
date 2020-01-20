@@ -65,6 +65,21 @@ app.patch('/api/v1/tours/:id', (req, res) => {
         })
     }
 });
+app.delete('/api/v1/tours/:id', (req, res) => {
+
+    const id = req.params.id * 1;
+    if ( id > tours.length) {
+        res.status(404).json({
+            status: 'failed',
+            message: 'The tour was not found'
+        })
+    } else {
+        res.status(200).json({
+            status: 'success',
+            data: null
+        })
+    }
+});
 
 app.post('/api/v1/tours', (req, res) => {
     const newId = tours[tours.length -1].id + 1;
