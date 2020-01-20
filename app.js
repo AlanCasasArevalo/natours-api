@@ -12,6 +12,7 @@ const publicPath = path.resolve(__dirname, '../public');
 const port = process.env.PORT || 3000;
 
 app.use(express.static(publicPath));
+app.use(express.json());
 
 // IO = esta es la comunicacion del backend
 module.exports.io = socketIO(server);
@@ -26,6 +27,36 @@ app.get('/api/v1/tours', (req, res) => {
             tours
         }
     })
+});
+app.post('/api/v1/tours', (req, res) => {
+    const newId = tours[tours.length -1].id + 1;
+    const newTour = Object.assign({id: newId}, req.body);
+
+    if (newTour && typeof newTour !== 'undefined'){
+        tours.push(newTour);
+
+        fs.writeFile(`${__dirname}/dev-data/data/tours-simple.json`, JSON.stringify(tours), error => {
+            if (error && typeof error !== 'undefined'){
+                res.status(500).json({
+                    status: 'failed',
+                    message: 'The creation was failed'
+                })
+            } else {
+                res.status(201).json({
+                    status: 'success',
+                    data: {
+                        tour: newTour
+                    }
+                })
+            }
+        })
+    } else {
+        res.status(500).json({
+            status: 'failed',
+            message: 'The creation was failed'
+        })
+    }
+
 });
 
 server.listen(port, (err) => {
