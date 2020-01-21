@@ -2,7 +2,7 @@ const express = require('express');
 const socketIO = require('socket.io');
 const fs = require('fs');
 const http = require('http');
-
+const morgan = require('morgan');
 const path = require('path');
 
 const app = express();
@@ -13,6 +13,11 @@ const port = process.env.PORT || 3000;
 
 app.use(express.static(publicPath));
 app.use(express.json());
+app.use(morgan('dev'));
+app.use((req, res, next) => {
+    req.requestTime = new Date().toISOString();
+    next();
+});
 
 // IO = esta es la comunicacion del backend
 module.exports.io = socketIO(server);
@@ -30,12 +35,12 @@ const getAllTours = (req, res) => {
 };
 
 const createNewTour = (req, res) => {
-    const newId = tours[tours.length -1].id + 1;
+    const newId = tours[tours.length - 1].id + 1;
     const newTour = Object.assign({id: newId}, req.body);
-    if (newTour && typeof newTour !== 'undefined'){
+    if (newTour && typeof newTour !== 'undefined') {
         tours.push(newTour);
         fs.writeFile(`${__dirname}/dev-data/data/tours-simple.json`, JSON.stringify(tours), error => {
-            if (error && typeof error !== 'undefined'){
+            if (error && typeof error !== 'undefined') {
                 res.status(500).json({
                     status: 'failed',
                     message: 'The creation was failed'
@@ -77,7 +82,7 @@ const getTour = (req, res) => {
 
 const updateTour = (req, res) => {
     const id = req.params.id * 1;
-    if ( id > tours.length) {
+    if (id > tours.length) {
         res.status(404).json({
             status: 'failed',
             message: 'The tour was not found'
@@ -92,7 +97,7 @@ const updateTour = (req, res) => {
 
 const deleteTour = (req, res) => {
     const id = req.params.id * 1;
-    if ( id > tours.length) {
+    if (id > tours.length) {
         res.status(404).json({
             status: 'failed',
             message: 'The tour was not found'
@@ -117,5 +122,5 @@ app.route('/api/v1/tours/:id')
 
 server.listen(port, (err) => {
     if (err) throw new Error(err);
-    console.log(`Servidor corriendo en puerto ${ port }`);
+    console.log(`Servidor corriendo en puerto ${port}`);
 });
