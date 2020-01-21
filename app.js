@@ -110,15 +110,57 @@ const deleteTour = (req, res) => {
     }
 };
 
+ const getAllUsers = (req, res) => {
+        res.status(500).json({
+            status: 'failed',
+            message: 'This route was not done yet'
+        })
+ };
+ const createNewUsers = (req, res) => {
+        res.status(500).json({
+            status: 'failed',
+            message: 'This route was not done yet'
+        })
+ };
+ const getUsers = (req, res) => {
+        res.status(500).json({
+            status: 'failed',
+            message: 'This route was not done yet'
+        })
+ };
+ const updateUsers = (req, res) => {
+        res.status(500).json({
+            status: 'failed',
+            message: 'This route was not done yet'
+        })
+ };
+ const deleteUsers = (req, res) => {
+        res.status(500).json({
+            status: 'failed',
+            message: 'This route was not done yet'
+        })
+ };
+
 app.route('/api/v1/tours')
     .get(getAllTours)
     .post(createNewTour);
-
 
 app.route('/api/v1/tours/:id')
     .get(getTour)
     .patch(updateTour)
     .delete(deleteTour);
+
+
+
+
+app.route('/api/v1/users')
+    .get(getAllUsers)
+    .post(createNewUsers);
+
+app.route('/api/v1/users/:id')
+    .get(getUsers)
+    .patch(updateUsers)
+    .delete(deleteUsers);
 
 server.listen(port, (err) => {
     if (err) throw new Error(err);
