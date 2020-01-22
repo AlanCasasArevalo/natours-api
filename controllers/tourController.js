@@ -12,6 +12,18 @@ const checkId = (req, res, next, val) => {
     next();
 };
 
+const checkBodyRequest = (req, res, next) => {
+    const name = req.body.name;
+    const price = req.body.price;
+    if (!name && typeof name === 'undefined' || !price && typeof price === 'undefined'){
+        return res.status(400).json({
+            status: 'failed',
+            message: 'Name or Price are not passing into request'
+        })
+    }
+    next()
+};
+
 const getAllTours = (req, res) => {
     res.status(200).json({
         status: 'success',
@@ -88,5 +100,6 @@ module.exports = {
     updateTour,
     getTour,
     deleteTour,
-    checkId
+    checkId,
+    checkBodyRequest,
 };
