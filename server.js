@@ -29,8 +29,23 @@ mongoose
         console.log('DB connection SUCCESSFUL!!');
     });
 
+const tourSchema = new mongoose.Schema({
+   name: {
+       type: String,
+       unique: true,
+       required: [true, 'A tour must have a name']
+   },
+   rating: {
+       type: Number,
+       default: 4.0
+   },
+   price: {
+       type: Number,
+       required: [true, 'A tour must have a price']
+   }
+});
 
-
+const Tour = mongoose.model('Tour' , tourSchema);
 
 
 
