@@ -50,22 +50,28 @@ const createNewTour = async (req, res) => {
 
 };
 
-const getTour = (req, res) => {
-    // const id = req.params.id * 1;
-    // const tour = tours.find(element => element.id === id);
-    // if (!tour && typeof tour === 'undefined' || id > tours.length) {
+const getTour = async (req, res) => {
+    try {
+        const tour = await Tour.findById(req.params.id);
+        if (tour && typeof tour !== 'undefined') {
+            res.status(200).json({
+                status: 'success',
+                data: {
+                    tour
+                }
+            })
+        } else {
+            res.status(500).json({
+                status: 'failed',
+                message: 'The recovered tours was failed'
+            })
+        }
+    } catch (error) {
         res.status(404).json({
             status: 'failed',
-            message: 'The tour was not found'
+            message: 'The recovered tour was failed'
         })
-    // } else {
-    //     res.status(200).json({
-    //         status: 'success',
-    //         data: {
-    //             tour
-    //         }
-    //     })
-    // }
+    }
 };
 
 const updateTour = (req, res) => {
