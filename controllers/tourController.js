@@ -24,7 +24,6 @@ const getAllTours = async (req, res) => {
         })
     }
 };
-
 const createNewTour = async (req, res) => {
     try {
         const newTour = await Tour.create(req.body);
@@ -49,7 +48,6 @@ const createNewTour = async (req, res) => {
     }
 
 };
-
 const getTour = async (req, res) => {
     try {
         const tour = await Tour.findById(req.params.id);
@@ -73,7 +71,6 @@ const getTour = async (req, res) => {
         })
     }
 };
-
 const updateTour = async (req, res) => {
     try {
         const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
@@ -101,14 +98,30 @@ const updateTour = async (req, res) => {
         })
     }
 };
-
-const deleteTour = (req, res) => {
-    res.status(200).json({
-        status: 'success',
-        data: null
-    })
+const deleteTour = async (req, res) => {
+    try {
+        const tour = await Tour.findByIdAndRemove(req.params.id);
+        if (tour && typeof tour !== 'undefined') {
+            res.status(204).json({
+                status: 'success',
+                message: 'Removed'
+                // data: {
+                //     tour
+                // }
+            })
+        } else {
+            res.status(500).json({
+                status: 'failed',
+                message: 'The removed tour was failed'
+            })
+        }
+    } catch (error) {
+        res.status(404).json({
+            status: 'failed',
+            message: 'The removed tour was failed'
+        })
+    }
 };
-
 module.exports = {
     getAllTours,
     createNewTour,
