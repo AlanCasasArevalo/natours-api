@@ -2,18 +2,6 @@
 // const tours = JSON.parse(fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`));
 const Tour = require('./../models/tourModel');
 
-const checkBodyRequest = (req, res, next) => {
-    // const name = req.body.name;
-    // const price = req.body.price;
-    // if (!name && typeof name === 'undefined' || !price && typeof price === 'undefined'){
-    //     return res.status(400).json({
-    //         status: 'failed',
-    //         message: 'Name or Price are not passing into request'
-    //     })
-    // }
-    next()
-};
-
 const getAllTours = (req, res) => {
     res.status(200).json({
         status: 'success',
@@ -24,32 +12,30 @@ const getAllTours = (req, res) => {
     })
 };
 
-const createNewTour = (req, res) => {
-    // const newId = tours[tours.length - 1].id + 1;
-    // const newTour = Object.assign({id: newId}, req.body);
-    // if (newTour && typeof newTour !== 'undefined') {
-    //     tours.push(newTour);
-    //     fs.writeFile(`${__dirname}/../dev-data/data/tours-simple.json`, JSON.stringify(tours), error => {
-    //         if (error && typeof error !== 'undefined') {
-    //             res.status(500).json({
-    //                 status: 'failed',
-    //                 message: 'The creation was failed'
-    //             })
-    //         } else {
-    //             res.status(201).json({
-    //                 status: 'success',
-    //                 data: {
-    //                     tour: newTour
-    //                 }
-    //             })
-    //         }
-    //     })
-    // } else {
-        res.status(500).json({
+const createNewTour = async (req, res) => {
+    try {
+        const newTour = await Tour.create(req.body);
+
+        if (newTour && typeof newTour !== 'undefined'){
+            res.status(201).json({
+                status: 'success',
+                data: {
+                    tour: newTour
+                }
+            })
+        } else {
+            res.status(500).json({
+                status: 'failed',
+                message: 'The creation was failed'
+            })
+        }
+    } catch (error) {
+        res.status(400).json({
             status: 'failed',
-            message: 'The creation was failed'
+            message: 'Invalid data sent'
         })
-    // }
+    }
+
 };
 
 const getTour = (req, res) => {
@@ -90,5 +76,4 @@ module.exports = {
     updateTour,
     getTour,
     deleteTour,
-    checkBodyRequest,
 };

@@ -7,7 +7,6 @@ const tourController = require('../controllers/tourController');
 router.route('/')
     .get(tourController.getAllTours)
     .post(
-        tourController.checkBodyRequest,
         tourController.createNewTour
     );
 
