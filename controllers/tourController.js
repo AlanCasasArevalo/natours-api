@@ -5,15 +5,17 @@ const getAllTours = async (req, res) => {
 
         const queryObj = {...req.query};
 
+        // exclude fields from query
         const excludedFields = ['page', 'sort', 'limit', 'fields'];
-
         excludedFields.forEach(element => delete queryObj[element]);
 
+        //We use mongoDB operators to use >=, <=, = filters
         let queryString = JSON.stringify(queryObj);
         queryString = queryString.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
         const queryJson = JSON.parse(queryString);
         let query = Tour.find(queryJson);
 
+        // Sort by fields, response shows first the fields that use on it
         if (req.query.sort) {
             const sortBy = req.query.sort.split(',').join(' ');
             query = query.sort(sortBy)
@@ -21,11 +23,26 @@ const getAllTours = async (req, res) => {
             query = query.sort('-createdAt')
         }
 
+        // Filter by fields, response shows only fields that we use on it
         if (req.query.fields) {
             const fields = req.query.fields.split(',').join(' ');
             query = query.select(fields)
         } else {
             query = query.select('-__v')
+        }
+
+        // Pagination
+        // page=2&limit=5, 1-5 page 1, 6-10 page 2, 11-15 page 3, etc
+        // query = query.skip(1).limit(5);
+        const page = req.query.page * 1 || 1;
+        const limit = req.query.limit * 1 || 100;
+        const skip = (page - 1) * limit || 1;
+        const numTours = await Tour.countDocuments();
+
+        if (page && typeof page !== 'undefined' && skip < numTours && limit && typeof limit !== 'undefined' && skip && typeof skip !== 'undefined') {
+            query = query.skip(skip).limit(limit);
+        } else {
+            throw new Error('This page does not exists');
         }
 
         const tours = await query;
