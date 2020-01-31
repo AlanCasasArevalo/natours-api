@@ -7,7 +7,7 @@ const getAllTours = async (req, res) => {
 
         const excludedFields = ['page', 'sort', 'limit', 'fields'];
 
-        excludedFields.forEach( element => delete  queryObj[element]);
+        excludedFields.forEach(element => delete queryObj[element]);
 
         let queryString = JSON.stringify(queryObj);
         queryString = queryString.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
@@ -19,6 +19,13 @@ const getAllTours = async (req, res) => {
             query = query.sort(sortBy)
         } else {
             query = query.sort('-createdAt')
+        }
+
+        if (req.query.fields) {
+            const fields = req.query.fields.split(',').join(' ');
+            query = query.select(fields)
+        } else {
+            query = query.select('-__v')
         }
 
         const tours = await query;
@@ -47,7 +54,7 @@ const getAllTours = async (req, res) => {
 const createNewTour = async (req, res) => {
     try {
         const newTour = await Tour.create(req.body);
-        if (newTour && typeof newTour !== 'undefined'){
+        if (newTour && typeof newTour !== 'undefined') {
             res.status(201).json({
                 status: 'success',
                 data: {
