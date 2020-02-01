@@ -172,7 +172,7 @@ const getTourStats = async (req, res) => {
             //         }
             //     }
             // }
-        ])
+        ]);
 
         if (stats && typeof stats !== 'undefined') {
             res.status(200).json({
