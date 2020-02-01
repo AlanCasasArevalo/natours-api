@@ -100,9 +100,17 @@ tourSchema.pre(/^find/, function (next) {
     next();
 });
 
-// QUERY MIDDLEWARE, this middleware is use it to get information of calls 
+// QUERY MIDDLEWARE, this middleware is use it to get information of calls
 tourSchema.post(/^find/, function (docs, next) {
     console.log(`Query took ${ Date.now() - this.start } milliseconds`);
+    next();
+});
+
+// AGGREGATION MIDDLEWARE this middleware is use to hide secret tour from all endpoint that could return a tour with secret tour to true.
+tourSchema.pre('aggregate', function (next) {
+    this.pipeline().unshift({
+        $match: { secretTour : { $ne: true } }
+    });
     next();
 });
 
