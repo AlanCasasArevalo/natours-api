@@ -131,6 +131,72 @@ const deleteTour = async (req, res) => {
     }
 };
 
+const getTourStats = async (req, res) => {
+    try {
+        // Aggregate its a method to use like Pipe, you take some properties and use them to get another ones
+        const  stats = await Tour.aggregate([
+            {
+                $match: {
+                    // This property should be into model to be matched
+                    ratingAverage: {
+                        $gte: 2.0
+                    }
+                }
+            },
+            {
+                // You could use some kind of grouped and returned properties all properties that you grouped
+                // here should be returned in call
+                $group: {
+                    _id: {
+                       $toUpper: '$difficulty'
+                    },
+                    // _id: '$maxGroupSize',
+                    // _id: '$difficulty',
+                    num: { $sum: 1 },
+                    numRating: { $sum: '$ratingQuantity' },
+                    avgRating: { $avg: '$ratingAverage' },
+                    avgPrice: { $avg: '$price' },
+                    minPrice: { $min: '$price' },
+                    maxPrice: { $max: '$price' },
+                }
+            }, {
+                // You can sorted the properties by property that you want
+                $sort: {
+                    avgPrice: 1
+                }
+            },
+            // You could hide some properties using more pipes  
+            // {
+            //     $match: {
+            //         _id: {
+            //             $ne: 'EASY'
+            //         }
+            //     }
+            // }
+        ])
+
+        if(stats && typeof stats !== 'undefined'){
+            res.status(200).json({
+                status: 'success',
+                message: 'Stats',
+                data: {
+                    stats
+                }
+            })
+        } else  {
+            res.status(500).json({
+                status: 'failed',
+                message: 'The stats were not found'
+            })
+        }
+    } catch (error) {
+        res.status(404).json({
+            status: 'failed',
+            message: 'The stats were not found'
+        })
+    }
+};
+
 const aliasTopTours = (req, res, next) => {
     req.query.limit = '5';
     req.query.sort = '-ratingAverage, price';
@@ -139,11 +205,13 @@ const aliasTopTours = (req, res, next) => {
     next()
 };
 
+
 module.exports = {
     getAllTours,
     createNewTour,
     updateTour,
     getTour,
     deleteTour,
+    getTourStats,
     aliasTopTours,
 };
