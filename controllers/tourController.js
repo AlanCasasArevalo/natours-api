@@ -130,11 +130,10 @@ const deleteTour = async (req, res) => {
         })
     }
 };
-
 const getTourStats = async (req, res) => {
     try {
         // Aggregate its a method to use like Pipe, you take some properties and use them to get another ones
-        const  stats = await Tour.aggregate([
+        const stats = await Tour.aggregate([
             {
                 $match: {
                     // This property should be into model to be matched
@@ -148,16 +147,16 @@ const getTourStats = async (req, res) => {
                 // here should be returned in call
                 $group: {
                     _id: {
-                       $toUpper: '$difficulty'
+                        $toUpper: '$difficulty'
                     },
                     // _id: '$maxGroupSize',
                     // _id: '$difficulty',
-                    num: { $sum: 1 },
-                    numRating: { $sum: '$ratingQuantity' },
-                    avgRating: { $avg: '$ratingAverage' },
-                    avgPrice: { $avg: '$price' },
-                    minPrice: { $min: '$price' },
-                    maxPrice: { $max: '$price' },
+                    num: {$sum: 1},
+                    numRating: {$sum: '$ratingQuantity'},
+                    avgRating: {$avg: '$ratingAverage'},
+                    avgPrice: {$avg: '$price'},
+                    minPrice: {$min: '$price'},
+                    maxPrice: {$max: '$price'},
                 }
             }, {
                 // You can sorted the properties by property that you want
@@ -165,7 +164,7 @@ const getTourStats = async (req, res) => {
                     avgPrice: 1
                 }
             },
-            // You could hide some properties using more pipes  
+            // You could hide some properties using more pipes
             // {
             //     $match: {
             //         _id: {
@@ -175,7 +174,7 @@ const getTourStats = async (req, res) => {
             // }
         ])
 
-        if(stats && typeof stats !== 'undefined'){
+        if (stats && typeof stats !== 'undefined') {
             res.status(200).json({
                 status: 'success',
                 message: 'Stats',
@@ -183,7 +182,7 @@ const getTourStats = async (req, res) => {
                     stats
                 }
             })
-        } else  {
+        } else {
             res.status(500).json({
                 status: 'failed',
                 message: 'The stats were not found'
@@ -196,7 +195,6 @@ const getTourStats = async (req, res) => {
         })
     }
 };
-
 const aliasTopTours = (req, res, next) => {
     req.query.limit = '5';
     req.query.sort = '-ratingAverage, price';
@@ -204,7 +202,71 @@ const aliasTopTours = (req, res, next) => {
 
     next()
 };
+const getMonthlyPlan = async (req, res) => {
+    try {
+        const year = req.params.year * 1;
+        const plan = await Tour.aggregate([
+            {
+                $unwind: '$startDates'
+            },
+            {
+                $match: {
+                    startDates: {
+                        $gte: new Date(`${year}-01-01`),
+                        $lte: new Date(`${year}-12-31`)
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: {$month: '$startDates'},
+                    numTourStarts: {$sum: 1},
+                    tours: {
+                        $push: '$name'
+                    }
+                }
+            },
+            {
+                $addFields: {month: '$_id'}
+            },
+            {
+                $project: {
+                    _id: 0
+                }
+            },
+            {
+                $sort: {
+                    _id: 1
+                }
+            },
 
+            // You could limit the response if you want
+            // {
+            //     $limit: 5
+            // }
+        ]);
+
+        if (plan && typeof plan !== 'undefined') {
+            res.status(200).json({
+                status: 'success',
+                message: 'Stats',
+                data: {
+                    plan
+                }
+            })
+        } else {
+            res.status(500).json({
+                status: 'failed',
+                message: 'The monthly was not found'
+            })
+        }
+    } catch (error) {
+        res.status(404).json({
+            status: 'failed',
+            message: 'The monthly was not found'
+        })
+    }
+};
 
 module.exports = {
     getAllTours,
@@ -214,4 +276,5 @@ module.exports = {
     deleteTour,
     getTourStats,
     aliasTopTours,
+    getMonthlyPlan,
 };
