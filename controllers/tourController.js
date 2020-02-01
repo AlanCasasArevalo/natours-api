@@ -1,200 +1,113 @@
 const Tour = require('./../models/tourModel');
 const APIFeatures = require('../utils/apiFeatures');
-const getAllTours = async (req, res) => {
-    try {
+const catchAsync = require('./../utils/catchAsync');
+const getAllTours = catchAsync(async (req, res, next) => {
+    const featureApi = new APIFeatures(Tour.find(), req.query)
+        .filter()
+        .sort()
+        .limit()
+        .pagination();
 
-        const featureApi = new APIFeatures(Tour.find(), req.query)
-            .filter()
-            .sort()
-            .limit()
-            .pagination();
-
-        const tours = await featureApi.query;
-
-        if (tours && typeof tours !== 'undefined') {
-            res.status(200).json({
-                status: 'success',
-                results: tours.length,
-                data: {
-                    tours
-                }
-            })
-        } else {
-            res.status(500).json({
-                status: 'failed',
-                message: 'The recovered tours was failed'
-            })
+    const tours = await featureApi.query;
+    res.status(200).json({
+        status: 'success',
+        results: tours.length,
+        data: {
+            tours
         }
-    } catch (error) {
-        res.status(404).json({
-            status: 'failed',
-            message: 'The recovered tours was failed'
-        })
-    }
-};
-const createNewTour = async (req, res) => {
-    try {
-        const newTour = await Tour.create(req.body);
-        if (newTour && typeof newTour !== 'undefined') {
-            res.status(201).json({
-                status: 'success',
-                data: {
-                    tour: newTour
-                }
-            })
-        } else {
-            res.status(500).json({
-                status: 'failed',
-                message: 'The creation was failed'
-            })
+    })
+});
+const createNewTour = catchAsync(async (req, res, next) => {
+    const newTour = await Tour.create(req.body);
+    res.status(201).json({
+        status: 'success',
+        data: {
+            tour: newTour
         }
-    } catch (error) {
-        res.status(400).json({
-            status: 'failed',
-            message: 'Invalid data sent'
-        })
-    }
-
-};
-const getTour = async (req, res) => {
-    try {
-        const tour = await Tour.findById(req.params.id);
-        if (tour && typeof tour !== 'undefined') {
-            res.status(200).json({
-                status: 'success',
-                data: {
-                    tour
-                }
-            })
-        } else {
-            res.status(500).json({
-                status: 'failed',
-                message: 'The recovered tours was failed'
-            })
+    })
+});
+const getTour = catchAsync(async (req, res, next) => {
+    const tour = await Tour.findById(req.params.id);
+    res.status(200).json({
+        status: 'success',
+        data: {
+            tour
         }
-    } catch (error) {
-        res.status(404).json({
-            status: 'failed',
-            message: 'The recovered tour was failed'
-        })
-    }
-};
-const updateTour = async (req, res) => {
-    try {
-        const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-            new: true,
-            runValidators: true
-        });
-        if (tour && typeof tour !== 'undefined') {
-            res.status(200).json({
-                status: 'success',
-                message: 'Updated',
-                data: {
-                    tour
-                }
-            })
-        } else {
-            res.status(500).json({
-                status: 'failed',
-                message: 'The updated tour was failed'
-            })
+    })
+});
+const updateTour = catchAsync(async (req, res, next) => {
+    const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+        new: true,
+        runValidators: true
+    });
+    res.status(200).json({
+        status: 'success',
+        message: 'Updated',
+        data: {
+            tour
         }
-    } catch (error) {
-        res.status(404).json({
-            status: 'failed',
-            message: 'The updated tour was failed'
-        })
-    }
-};
-const deleteTour = async (req, res) => {
-    try {
-        const tour = await Tour.findByIdAndRemove(req.params.id);
-        if (tour && typeof tour !== 'undefined') {
-            res.status(204).json({
-                status: 'success',
-                message: 'Removed'
-                // data: {
-                //     tour
-                // }
-            })
-        } else {
-            res.status(500).json({
-                status: 'failed',
-                message: 'The removed tour was failed'
-            })
+    })
+});
+const deleteTour = catchAsync(async (req, res, next) => {
+    const tour = await Tour.findByIdAndRemove(req.params.id);
+    res.status(204).json({
+        status: 'success',
+        message: 'Removed',
+        data: {
+            tour
         }
-    } catch (error) {
-        res.status(404).json({
-            status: 'failed',
-            message: 'The removed tour was failed'
-        })
-    }
-};
-const getTourStats = async (req, res) => {
-    try {
-        // Aggregate its a method to use like Pipe, you take some properties and use them to get another ones
-        const stats = await Tour.aggregate([
-            {
-                $match: {
-                    // This property should be into model to be matched
-                    ratingAverage: {
-                        $gte: 2.0
-                    }
+    })
+});
+const getTourStats = catchAsync(async (req, res, next) => {
+    // Aggregate its a method to use like Pipe, you take some properties and use them to get another ones
+    const stats = await Tour.aggregate([
+        {
+            $match: {
+                // This property should be into model to be matched
+                ratingAverage: {
+                    $gte: 2.0
                 }
-            },
-            {
-                // You could use some kind of grouped and returned properties all properties that you grouped
-                // here should be returned in call
-                $group: {
-                    _id: {
-                        $toUpper: '$difficulty'
-                    },
-                    // _id: '$maxGroupSize',
-                    // _id: '$difficulty',
-                    num: {$sum: 1},
-                    numRating: {$sum: '$ratingQuantity'},
-                    avgRating: {$avg: '$ratingAverage'},
-                    avgPrice: {$avg: '$price'},
-                    minPrice: {$min: '$price'},
-                    maxPrice: {$max: '$price'},
-                }
-            }, {
-                // You can sorted the properties by property that you want
-                $sort: {
-                    avgPrice: 1
-                }
-            },
-            // You could hide some properties using more pipes
-            // {
-            //     $match: {
-            //         _id: {
-            //             $ne: 'EASY'
-            //         }
-            //     }
-            // }
-        ]);
-
-        if (stats && typeof stats !== 'undefined') {
-            res.status(200).json({
-                status: 'success',
-                message: 'Stats',
-                data: {
-                    stats
-                }
-            })
-        } else {
-            res.status(500).json({
-                status: 'failed',
-                message: 'The stats were not found'
-            })
+            }
+        },
+        {
+            // You could use some kind of grouped and returned properties all properties that you grouped
+            // here should be returned in call
+            $group: {
+                _id: {
+                    $toUpper: '$difficulty'
+                },
+                // _id: '$maxGroupSize',
+                // _id: '$difficulty',
+                num: {$sum: 1},
+                numRating: {$sum: '$ratingQuantity'},
+                avgRating: {$avg: '$ratingAverage'},
+                avgPrice: {$avg: '$price'},
+                minPrice: {$min: '$price'},
+                maxPrice: {$max: '$price'},
+            }
+        }, {
+            // You can sorted the properties by property that you want
+            $sort: {
+                avgPrice: 1
+            }
+        },
+        // You could hide some properties using more pipes
+        // {
+        //     $match: {
+        //         _id: {
+        //             $ne: 'EASY'
+        //         }
+        //     }
+        // }
+    ]);
+    res.status(200).json({
+        status: 'success',
+        message: 'Stats',
+        data: {
+            stats
         }
-    } catch (error) {
-        res.status(404).json({
-            status: 'failed',
-            message: 'The stats were not found'
-        })
-    }
-};
+    })
+});
 const aliasTopTours = (req, res, next) => {
     req.query.limit = '5';
     req.query.sort = '-ratingAverage, price';

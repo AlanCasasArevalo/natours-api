@@ -1,33 +1,16 @@
-const getAllUsers = (req, res) => {
-    res.status(500).json({
-        status: 'failed',
-        message: 'This route was not done yet'
-    })
-};
-const createNewUsers = (req, res) => {
-    res.status(500).json({
-        status: 'failed',
-        message: 'This route was not done yet'
-    })
-};
-const getUsers = (req, res) => {
-    res.status(500).json({
-        status: 'failed',
-        message: 'This route was not done yet'
-    })
-};
-const updateUsers = (req, res) => {
-    res.status(500).json({
-        status: 'failed',
-        message: 'This route was not done yet'
-    })
-};
-const deleteUsers = (req, res) => {
-    res.status(500).json({
-        status: 'failed',
-        message: 'This route was not done yet'
-    })
-};
+const catchAsync = require('./../utils/catchAsync');
+
+const getAllUsers = catchAsync(async (req, res, next) => {
+});
+const createNewUsers = catchAsync(async (req, res, next) => {
+});
+const getUsers = catchAsync(async (req, res, next) => {
+});
+const updateUsers = catchAsync(async (req, res, next) => {
+
+});
+const deleteUsers = catchAsync(async (req, res, next) => {
+});
 
 module.exports = {
     getAllUsers,
