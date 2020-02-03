@@ -200,7 +200,7 @@ const getMonthlyPlan = catchAsync(async (req, res, next) => {
                 plan
             }
         })
-    }     
+    }
 });
 
 module.exports = {
