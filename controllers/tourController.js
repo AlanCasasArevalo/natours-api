@@ -1,4 +1,5 @@
 const Tour = require('./../models/tourModel');
+const AppError = require('./../utils/appError');
 const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('./../utils/catchAsync');
 const getAllTours = catchAsync(async (req, res, next) => {
@@ -9,54 +10,80 @@ const getAllTours = catchAsync(async (req, res, next) => {
         .pagination();
 
     const tours = await featureApi.query;
-    res.status(200).json({
-        status: 'success',
-        results: tours.length,
-        data: {
-            tours
-        }
-    })
+
+    if (!tours || typeof tours === 'undefined') {
+        return next(new AppError('No tour was founded', 404))
+    } else  {
+        res.status(200).json({
+            status: 'success',
+            results: tours.length,
+            data: {
+                tours
+            }
+        })
+    }
 });
 const createNewTour = catchAsync(async (req, res, next) => {
     const newTour = await Tour.create(req.body);
-    res.status(201).json({
-        status: 'success',
-        data: {
-            tour: newTour
-        }
-    })
+
+    if (!newTour || typeof newTour === 'undefined') {
+        return next(new AppError('No tour was founded', 404))
+    } else  {
+        res.status(201).json({
+            status: 'success',
+            data: {
+                tour: newTour
+            }
+        })
+    }
 });
 const getTour = catchAsync(async (req, res, next) => {
     const tour = await Tour.findById(req.params.id);
-    res.status(200).json({
-        status: 'success',
-        data: {
-            tour
-        }
-    })
+
+    if (!tour || typeof tour === 'undefined') {
+        return next(new AppError('No tour was founded', 404))
+    } else  {
+        res.status(200).json({
+            status: 'success',
+            data: {
+                tour
+            }
+        })
+    }
+
 });
 const updateTour = catchAsync(async (req, res, next) => {
     const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
         new: true,
         runValidators: true
     });
-    res.status(200).json({
-        status: 'success',
-        message: 'Updated',
-        data: {
-            tour
-        }
-    })
+
+    if (!tour || typeof tour === 'undefined') {
+        return next(new AppError('No tour was founded', 404))
+    } else  {
+        res.status(200).json({
+            status: 'success',
+            message: 'Updated',
+            data: {
+                tour
+            }
+        })
+    }
 });
 const deleteTour = catchAsync(async (req, res, next) => {
     const tour = await Tour.findByIdAndRemove(req.params.id);
-    res.status(204).json({
-        status: 'success',
-        message: 'Removed',
-        data: {
-            tour
-        }
-    })
+
+    if (!tour || typeof tour === 'undefined') {
+        return next(new AppError('No tour was founded', 404))
+    } else  {
+        res.status(204).json({
+            status: 'success',
+            message: 'Removed',
+            data: {
+                tour
+            }
+        })
+    }
 });
 const getTourStats = catchAsync(async (req, res, next) => {
     // Aggregate its a method to use like Pipe, you take some properties and use them to get another ones
@@ -100,13 +127,18 @@ const getTourStats = catchAsync(async (req, res, next) => {
         //     }
         // }
     ]);
-    res.status(200).json({
-        status: 'success',
-        message: 'Stats',
-        data: {
-            stats
-        }
-    })
+
+    if (!stats || typeof stats === 'undefined') {
+        return next(new AppError('No tour was founded', 404))
+    } else  {
+        res.status(200).json({
+            status: 'success',
+            message: 'Stats',
+            data: {
+                stats
+            }
+        })
+    }
 });
 const aliasTopTours = (req, res, next) => {
     req.query.limit = '5';
@@ -115,8 +147,7 @@ const aliasTopTours = (req, res, next) => {
 
     next()
 };
-const getMonthlyPlan = async (req, res) => {
-    try {
+const getMonthlyPlan = catchAsync(async (req, res, next) => {
         const year = req.params.year * 1;
         const plan = await Tour.aggregate([
             {
@@ -159,27 +190,18 @@ const getMonthlyPlan = async (req, res) => {
             // }
         ]);
 
-        if (plan && typeof plan !== 'undefined') {
-            res.status(200).json({
-                status: 'success',
-                message: 'Stats',
-                data: {
-                    plan
-                }
-            })
-        } else {
-            res.status(500).json({
-                status: 'failed',
-                message: 'The monthly was not found'
-            })
-        }
-    } catch (error) {
-        res.status(404).json({
-            status: 'failed',
-            message: 'The monthly was not found'
+    if (!plan || typeof plan === 'undefined') {
+        return next(new AppError('No tour was founded', 404))
+    } else  {
+        res.status(200).json({
+            status: 'success',
+            message: 'Stats',
+            data: {
+                plan
+            }
         })
-    }
-};
+    }     
+});
 
 module.exports = {
     getAllTours,
