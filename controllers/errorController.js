@@ -8,13 +8,19 @@ const handleErrorDB = errorDB => {
 const handleDuplicateFieldsDB = errorDB => {
     const errorValue = errorDB.errmsg.match(/(["'])(\\?.)*?\1/)[0];
     const message = `Duplicate field value: ${errorValue}. Please use another value.`;
+    return new AppError(message, 400);
+};
 
+const handleValidationErrorDB = errorDB => {
+    const errors = Object.values(errorDB.errors).map(element => element.message);
+    const message = `Invalid input data ${errors.join('.')}`;
     return new AppError(message, 400);
 };
 
 const developmentError = (error, res) => {
     const statusErrorCode = error.statusCode || 500;
     const status = error.status || 'error';
+
 
     res.status(statusErrorCode).json({
         status: status,
@@ -46,6 +52,7 @@ const globalErrorHandler = (error, req, res, next) => {
         let errorDes = {...error};
         if (errorDes.name === 'CastError') errorDes = handleErrorDB(errorDes);
         if (errorDes.code === 11000) errorDes = handleDuplicateFieldsDB(errorDes);
+        if (errorDes.name === 'ValidationError') errorDes = handleValidationErrorDB(errorDes);
 
         productionsError(errorDes, res);
     }
