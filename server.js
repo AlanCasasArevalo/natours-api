@@ -1,5 +1,11 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+
+process.on('uncaughtException', error => {
+    console.log('', error.name, error.message);
+    process.exit(1);
+});
+
 dotenv.config({
     path: './config.env'
 });
@@ -20,10 +26,10 @@ let DB = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWOR
 
 mongoose
     .connect(DB, {
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useFindAndModify: false
-})
+        useNewUrlParser: true,
+        useCreateIndex: true,
+        useFindAndModify: false
+    })
     .then((connection) => {
         // console.log('Mongoose connection', connection.connections );
         console.log('DB connection SUCCESSFUL!!');
@@ -34,3 +40,13 @@ server.listen(port, (err) => {
     if (err) throw new Error(err);
     console.log(`Servidor corriendo en puerto ${port}`);
 });
+
+process.on('unhandledRejection', error => {
+    console.log('', error.name, error.message);
+    server.close(() => {
+        process.exit(1);
+    });
+});
+
+
+
