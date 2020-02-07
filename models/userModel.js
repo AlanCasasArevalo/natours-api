@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
 const validator = require('validator');
-
+const bcrypt = require('bcrypt');
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -35,10 +35,27 @@ const userSchema = new mongoose.Schema({
         trim: false,
         required: [true, 'An user should have a confirmPassword'],
         maxlength: [40, 'An confirmPassword must have less or equal then 40 characters'],
-        minlength: [2, 'An confirmPassword must have more or equal then 2 characters']
+        minlength: [2, 'An confirmPassword must have more or equal then 2 characters'],
+        validate: {
+            // This only works with CREATE AND SAVED
+            validator: function (element) {
+                return element === this.password;
+            },
+            message: 'Password and confirmPassword are not the same'
+        }
     },
     photo: {
         type: String,
+    }
+});
+
+userSchema.pre('save', async function (next) {
+    if (!this.isModified('password')) {
+        return next;
+    } else {
+        this.password = await bcrypt.hash(this.password, 12);
+        this.confirmPassword = undefined;
+        next();
     }
 });
 
