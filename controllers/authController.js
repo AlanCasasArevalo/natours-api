@@ -2,7 +2,7 @@ const User = require('../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 const jwt = require('jsonwebtoken');
-const { promisify } = require('util')
+const {promisify} = require('util')
 
 const signToken = id => {
     return jwt.sign({
@@ -18,17 +18,19 @@ const signUp = catchAsync(async (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
     const confirmPassword = req.body.confirmPassword;
+    const role = req.body.role;
 
     if (name && typeof name !== 'undefined' &&
-    email && typeof email !== 'undefined' &&
-    password && typeof password !== 'undefined' &&
-    confirmPassword && typeof confirmPassword !== 'undefined'
+        email && typeof email !== 'undefined' &&
+        password && typeof password !== 'undefined' &&
+        confirmPassword && typeof confirmPassword !== 'undefined'
     ) {
         const newUser = await User.create({
             name: name,
             email: email,
             password: password,
-            confirmPassword: confirmPassword
+            confirmPassword: confirmPassword,
+            role: role
         });
 
         const token = signToken(newUser._id);
@@ -50,7 +52,7 @@ const signUp = catchAsync(async (req, res, next) => {
 });
 
 const login = catchAsync(async (req, res, next) => {
-    const { email, password } = req.body;
+    const {email, password} = req.body;
 
     if (email && typeof email !== 'undefined' && password && typeof password !== 'undefined') {
         const user = await User.findOne({
@@ -73,7 +75,7 @@ const login = catchAsync(async (req, res, next) => {
     }
 });
 
-const protect = catchAsync( async (req, res, next) => {
+const protect = catchAsync(async (req, res, next) => {
     let token;
     if (req.headers.authorization && typeof req.headers.authorization !== 'undefined' && req.headers.authorization.startsWith('Bearer')) {
         token = req.headers.authorization.split(' ')[1];
@@ -81,12 +83,13 @@ const protect = catchAsync( async (req, res, next) => {
 
     if (token && typeof token !== 'undefined') {
         const decode = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-        const freshUser = await User.findById(decode.id);
+        const currentUser = await User.findById(decode.id);
 
-        if (freshUser && typeof freshUser !== 'undefined') {
-            if (freshUser.changedPasswordAfter(decode.iat)) {
+        if (currentUser && typeof currentUser !== 'undefined') {
+            if (currentUser.changedPasswordAfter(decode.iat)) {
                 return next(new AppError('Please use your new password', 401));
             }
+            req.user = currentUser;
         } else {
             return next(new AppError('The user was not found in our data base', 401));
         }
@@ -97,9 +100,22 @@ const protect = catchAsync( async (req, res, next) => {
     next();
 });
 
+const restrictTo = (...roles) => {
+    return (req, res, next) => {
+        // roles is an array
+        const rolesUserContained = roles.includes(req.user.role);
+        if (!rolesUserContained && typeof rolesUserContained !== 'undefined') {
+            return new AppError('You do not have permission to use this functionality', 403)
+        } else {
+            next()
+        }
+    };
+};
+
 
 module.exports = {
     signUp,
     login,
     protect,
+    restrictTo,
 };
