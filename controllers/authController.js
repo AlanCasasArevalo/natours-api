@@ -2,6 +2,7 @@ const User = require('../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 const jwt = require('jsonwebtoken');
+const { promisify } = require('util')
 
 const signToken = id => {
     return jwt.sign({
@@ -72,8 +73,33 @@ const login = catchAsync(async (req, res, next) => {
     }
 });
 
+const protect = catchAsync( async (req, res, next) => {
+    let token;
+    if (req.headers.authorization && typeof req.headers.authorization !== 'undefined' && req.headers.authorization.startsWith('Bearer')) {
+        token = req.headers.authorization.split(' ')[1];
+    }
+
+    if (token && typeof token !== 'undefined') {
+        const decode = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+        const freshUser = await User.findById(decode.id);
+
+        if (freshUser && typeof freshUser !== 'undefined') {
+            if (freshUser.changedPasswordAfter(decode.iat)) {
+                return next(new AppError('Please use your new password', 401));
+            }
+        } else {
+            return next(new AppError('The user was not found in our data base', 401));
+        }
+    } else {
+        return next(new AppError('You are not logged in, please Log in to get access to our great tours', 401));
+    }
+
+    next();
+});
+
 
 module.exports = {
     signUp,
     login,
+    protect,
 };

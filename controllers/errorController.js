@@ -29,6 +29,10 @@ const developmentError = (error, res) => {
         stack: error.stack
     })
 };
+
+const handlerJWTError = () => new AppError('The token is not valid, please Loggin again.', 401);
+const handlerJWTExpiredError = () => new AppError('Your token was expired, please Loggin again.', 401);
+
 const productionsError = (error, res) => {
     if (error.isOperational) {
         res.status(error.statusCode).json({
@@ -53,6 +57,9 @@ const globalErrorHandler = (error, req, res, next) => {
         if (errorDes.name === 'CastError') errorDes = handleErrorDB(errorDes);
         if (errorDes.code === 11000) errorDes = handleDuplicateFieldsDB(errorDes);
         if (errorDes.name === 'ValidationError') errorDes = handleValidationErrorDB(errorDes);
+
+        if (errorDes.name === 'JsonWebTokenError') errorDes = handlerJWTError();
+        if (errorDes.name === 'TokenExpiredError') errorDes = handlerJWTExpiredError();
 
         productionsError(errorDes, res);
     }
