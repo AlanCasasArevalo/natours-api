@@ -112,10 +112,47 @@ const restrictTo = (...roles) => {
     };
 };
 
+const forgotPassword = catchAsync(async (req, res, next) => {
+    const email = req.body.email;
+    if (email && typeof email !== 'undefined') {
+        const user = await User.findOne({
+            email
+        });
+
+        if (user && typeof user !== 'undefined') {
+
+            const resetToken = user.createPasswordResetToken();
+
+            const userUpdated = await user.save( { validateBeforeSave: false } );
+
+            if (userUpdated && typeof userUpdated !== 'undefined') {
+                res.status(203).json({
+                    status: 'success',
+                    resetToken,
+                    data: {
+                        user: userUpdated
+                    }
+                });
+            } else {
+                return next(new AppError('We have an error when we tried to updated your user', 500));
+            }
+        } else {
+            return next(new AppError('The email was not found in our data base', 401));
+        }
+    } else {
+        return next(new AppError('The email was not found in our data base', 401));
+    }
+});
+
+const resetPassword = catchAsync(async (req, res, next) => {
+    next()
+});
 
 module.exports = {
     signUp,
     login,
     protect,
     restrictTo,
+    forgotPassword,
+    resetPassword
 };
