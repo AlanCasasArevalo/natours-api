@@ -14,6 +14,17 @@ const signToken = id => {
     });
 };
 
+const createSendToken = (user, statusCode, res) => {
+    const token = signToken(user._id);
+        res.status(statusCode).json({
+            status: 'success',
+            token,
+            data: {
+                user: user
+            }
+        })
+};
+
 const signUp = catchAsync(async (req, res, next) => {
 
     const name = req.body.name;
@@ -35,16 +46,8 @@ const signUp = catchAsync(async (req, res, next) => {
             role: role
         });
 
-        const token = signToken(newUser._id);
-
-        if (newUser && typeof newUser !== 'undefined' && token && typeof token !== 'undefined') {
-            res.status(201).json({
-                status: 'success',
-                token,
-                data: {
-                    user: newUser
-                }
-            })
+        if (newUser && typeof newUser !== 'undefined') {
+            createSendToken(newUser, 201, res);
         } else {
             return next(new AppError('No user could be created', 400));
         }
@@ -64,11 +67,7 @@ const login = catchAsync(async (req, res, next) => {
         const correct = await user.correctPassword(password, user.password);
 
         if (user && typeof user !== 'undefined' && correct && typeof correct !== 'undefined') {
-            const token = signToken(user._id);
-            res.status(200).json({
-                status: 'success',
-                token
-            })
+            createSendToken(user, 200, res);
         } else {
             return next(new AppError('Email or password are wrong, please try again', 401));
         }
@@ -183,10 +182,7 @@ const resetPassword = catchAsync(async (req, res, next) => {
         const userSaved = await user.save();
 
         if (userSaved && typeof userSaved !== 'undefined') {
-            res.status(200).json({
-                status: 'success',
-                userSaved
-            })
+            createSendToken(userSaved, 200, res);
         } else {
             return next(new AppError('The user could not be saved please try later', 400));
         }
@@ -196,11 +192,38 @@ const resetPassword = catchAsync(async (req, res, next) => {
 
 });
 
+const updatePassword = catchAsync( async  (req, res, next) => {
+
+    const id = req.user.id;
+    const password = req.body.password;
+    const confirmPassword = req.body.confirmPassword;
+    const passwordCurrent = req.body.passwordCurrent;
+    // 1) get user from collection
+    const user = await User.findById(id).select('+password');
+
+    // 2) check if posted current password is correct
+    const isCorrectPassword = await user.correctPassword(passwordCurrent, user.password);
+    if (isCorrectPassword) {
+        user.password = password;
+        user.confirmPassword = confirmPassword;
+        const userUpdated = await user.save();
+
+        if (userUpdated && typeof userUpdated !== 'undefined') {
+            createSendToken(userUpdated, 201, res);
+        } else {
+            return next(new AppError('We has a problem with this operation, please try it later', 500));
+        }
+    } else {
+        return next(new AppError('Your password is wrong', 401));
+    }
+});
+
 module.exports = {
     signUp,
     login,
     protect,
     forgotPassword,
     resetPassword,
+    updatePassword,
     restrictTo,
 };
