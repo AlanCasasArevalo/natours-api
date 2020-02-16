@@ -1,4 +1,5 @@
 const User = require('../models/userModel');
+const crypto = require('crypto');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 const sendEmail = require('./../utils/email');
@@ -128,7 +129,7 @@ const forgotPassword = catchAsync(async (req, res, next) => {
 
             if (userUpdated && typeof userUpdated !== 'undefined') {
                 const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
-                const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`
+                const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
 
                 try {
                     await sendEmail({
@@ -159,14 +160,47 @@ const forgotPassword = catchAsync(async (req, res, next) => {
 });
 
 const resetPassword = catchAsync(async (req, res, next) => {
-    next()
+    const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+
+    const password = req.body.password;
+    const confirmPassword = req.body.confirmPassword;
+    const passwordResetToken = req.body.passwordResetToken;
+    const passwordResetExpired = req.body.passwordResetExpired;
+
+    const user = await User.findOne({
+        passwordResetToken: hashedToken,
+        passwordResetExpired: {
+            $gt: Date.now()
+        }
+    });
+
+    if (user && typeof user !== 'undefined') {
+        user.password = password;
+        user.confirmPassword = confirmPassword;
+        user.passwordResetToken = undefined;
+        user.passwordResetExpired = undefined;
+
+        const userSaved = await user.save();
+
+        if (userSaved && typeof userSaved !== 'undefined') {
+            res.status(200).json({
+                status: 'success',
+                userSaved
+            })
+        } else {
+            return next(new AppError('The user could not be saved please try later', 400));
+        }
+    } else {
+        return next(new AppError('Token is invalid or has expired', 400));
+    }
+
 });
 
 module.exports = {
     signUp,
     login,
     protect,
-    restrictTo,
     forgotPassword,
-    resetPassword
+    resetPassword,
+    restrictTo,
 };
