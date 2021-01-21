@@ -1,6 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit')
+const helmet = require('helmet')
 const path = require('path');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -11,7 +12,7 @@ const app = express();
 
 const publicPath = path.resolve(__dirname, '../public');
 app.use(express.static(publicPath));
-app.use(express.json());
+app.use(express.json({ limit: '10kb'}));
 app.use(express.static(`${__dirname}/public`));
 
 if (process.env.NODE_ENV === 'development') {
@@ -26,6 +27,9 @@ const limiter = rateLimit({
 })
 
 app.use('/api', limiter)
+
+// Set Security http headers
+app.use(helmet())
 
 app.use((req, res, next) => {
     req.requestTime = new Date().toISOString();
