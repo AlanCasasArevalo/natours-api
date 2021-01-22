@@ -6,11 +6,7 @@ const reviewSchema = new mongoose.Schema({
         required: [true, 'A review must have a number'],
         min: [1, 'Rating must be above 1'],
         max: [5, 'Rating must be below 5'],
-        default: 4,
-        enum: {
-            values: [1, 2, 3, 4, 5],
-            message: 'The values allowed are 1, 2, 3, 4, 5'
-        }
+        default: 4
     },
     createdAt: {
         type: Date,
