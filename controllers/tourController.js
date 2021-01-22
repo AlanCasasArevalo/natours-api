@@ -40,6 +40,7 @@ const createNewTour = catchAsync(async (req, res, next) => {
 const getTour = catchAsync(async (req, res, next) => {
     // Populate sirveobtener objetos y tambien para poder discriminar que quieres de esos objetos en esta peticion se pide los objeto guides de los usuarios y le quitamos los parametros __v y passwordChangedAt con el menos delante
     const tour = await Tour.findById(req.params.id)
+        .populate('reviews')
 
     if (!tour || typeof tour === 'undefined') {
         return next(new AppError('No tour was founded', 404))

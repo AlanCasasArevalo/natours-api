@@ -34,14 +34,17 @@ const reviewSchema = new mongoose.Schema({
 
 // QUERY MIDDLEWARE, this middleware is use it to hide tours with parameter secretTour to true
 reviewSchema.pre(/^find/, function (next) {
+    // this.populate({
+    //     path: 'tour',
+    //     select: 'name'
+    // }).populate({
+    //     path: 'user',
+    //     select: 'name photo'
+    // })
     this.populate({
-        path: 'tour',
-        select: 'name'
-    }).populate({
         path: 'user',
         select: 'name photo'
     })
-
     next();
 });
 
