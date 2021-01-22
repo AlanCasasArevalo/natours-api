@@ -141,6 +141,14 @@ tourSchema.pre('save', function (next) {
 
 // QUERY MIDDLEWARE, this middleware is use it to hide tours with parameter secretTour to true
 tourSchema.pre(/^find/, function (next) {
+    this.populate({
+        path: 'guides',
+        select: '-__v -passwordChangedAt'
+    })
+    next();
+});
+
+tourSchema.pre(/^find/, function (next) {
     this.find({
         secretTour: {
             $ne: true
@@ -149,6 +157,7 @@ tourSchema.pre(/^find/, function (next) {
     this.start = Date.now();
     next();
 });
+
 
 // QUERY MIDDLEWARE, this middleware is use it to get information of calls
 tourSchema.post(/^find/, function (docs, next) {
