@@ -32,6 +32,19 @@ const reviewSchema = new mongoose.Schema({
     toObject: {virtuals: true}
 })
 
+// QUERY MIDDLEWARE, this middleware is use it to hide tours with parameter secretTour to true
+reviewSchema.pre(/^find/, function (next) {
+    this.populate({
+        path: 'tour',
+        select: 'name'
+    }).populate({
+        path: 'user',
+        select: 'name photo'
+    })
+
+    next();
+});
+
 const Review = mongoose.model('Review', reviewSchema);
 
 module.exports = Review;
