@@ -2,6 +2,9 @@ const Tour = require('./../models/tourModel');
 const AppError = require('./../utils/appError');
 const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('./../utils/catchAsync');
+
+const handlerFactory = require('../controllers/handlerFactory')
+
 const getAllTours = catchAsync(async (req, res, next) => {
     const featureApi = new APIFeatures(Tour.find(), req.query)
         .filter()
@@ -72,21 +75,8 @@ const updateTour = catchAsync(async (req, res, next) => {
         })
     }
 });
-const deleteTour = catchAsync(async (req, res, next) => {
-    const tour = await Tour.findByIdAndRemove(req.params.id);
+const deleteTour = handlerFactory.deleteOne(Tour)
 
-    if (!tour || typeof tour === 'undefined') {
-        return next(new AppError('No tour was founded', 404))
-    } else  {
-        res.status(204).json({
-            status: 'success',
-            message: 'Removed',
-            data: {
-                tour
-            }
-        })
-    }
-});
 const getTourStats = catchAsync(async (req, res, next) => {
     // Aggregate its a method to use like Pipe, you take some properties and use them to get another ones
     const stats = await Tour.aggregate([
