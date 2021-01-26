@@ -44,8 +44,11 @@ const createNewReview = catchAsync(async (req, res, next) => {
 
 const deleteReview = handlerFactory.deleteOne(Review)
 
+const updateReview = handlerFactory.updateOne(Review)
+
 module.exports = {
     getAllReviews,
     createNewReview,
-    deleteReview
+    deleteReview,
+    updateReview
 };

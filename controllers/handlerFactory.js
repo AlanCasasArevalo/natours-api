@@ -17,6 +17,26 @@ const deleteOne = Model => catchAsync(async (req, res, next) => {
     }
 })
 
+const updateOne = Model => catchAsync(async (req, res, next) => {
+    const docModel = await Model.findByIdAndUpdate(req.params.id, req.body, {
+        new: true,
+        runValidators: true
+    });
+
+    if (!docModel || typeof docModel === 'undefined') {
+        return next(new AppError('No document was founded with that ID', 404))
+    } else  {
+        res.status(200).json({
+            status: 'success',
+            message: 'Updated',
+            data: {
+                docModel
+            }
+        })
+    }
+});
+
 module.exports = {
-    deleteOne
+    deleteOne,
+    updateOne
 }

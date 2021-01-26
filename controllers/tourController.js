@@ -57,24 +57,8 @@ const getTour = catchAsync(async (req, res, next) => {
     }
 
 });
-const updateTour = catchAsync(async (req, res, next) => {
-    const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-        new: true,
-        runValidators: true
-    });
+const updateTour = handlerFactory.updateOne(Tour)
 
-    if (!tour || typeof tour === 'undefined') {
-        return next(new AppError('No tour was founded', 404))
-    } else  {
-        res.status(200).json({
-            status: 'success',
-            message: 'Updated',
-            data: {
-                tour
-            }
-        })
-    }
-});
 const deleteTour = handlerFactory.deleteOne(Tour)
 
 const getTourStats = catchAsync(async (req, res, next) => {
