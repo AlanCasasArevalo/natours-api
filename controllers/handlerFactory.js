@@ -40,19 +40,41 @@ const createOne = Model => catchAsync(async (req, res, next) => {
     const docModel = await Model.create(req.body);
 
     if (!docModel || typeof docModel === 'undefined') {
-        return next(new AppError('No tour was founded', 404))
+        return next(new AppError('No document was founded with that ID', 404))
     } else  {
         res.status(201).json({
             status: 'success',
             data: {
-                tour: docModel
+                docModel: docModel
             }
         })
     }
 });
 
+const getOneById = (Model, populateOptions) => catchAsync(async (req, res, next) => {
+    let query = Model.findById(req.params.id)
+
+    if (populateOptions) query = query.populate(populateOptions)
+
+    const docModel = await query
+
+    if (!docModel || typeof docModel === 'undefined') {
+        return next(new AppError('No document was founded with that ID', 404))
+    } else  {
+        res.status(200).json({
+            status: 'success',
+            data: {
+                docModel
+            }
+        })
+    }
+
+});
+
+
 module.exports = {
     deleteOne,
     updateOne,
-    createOne
+    createOne,
+    getOneById
 }

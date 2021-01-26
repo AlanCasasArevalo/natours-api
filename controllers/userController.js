@@ -70,11 +70,10 @@ const deleteMe = catchAsync(async (req, res, next) => {
 });
 
 const createNewUsers = catchAsync(async (req, res, next) => {
-    next(new AppError('This route is not defined yet', 404))
+    next(new AppError('This route is not defined. Please use /signup instead', 404))
 });
-const getUsers = catchAsync(async (req, res, next) => {
-    next(new AppError('This route is not defined yet', 404))
-});
+
+const getUsers = handlerFactory.getOneById(User)
 
 // Do not update password with this endpoint
 const updateUsers = handlerFactory.updateOne(User)

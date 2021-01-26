@@ -37,10 +37,13 @@ const deleteReview = handlerFactory.deleteOne(Review)
 
 const updateReview = handlerFactory.updateOne(Review)
 
+const getReviewById = handlerFactory.getOneById(Review)
+
 module.exports = {
     getAllReviews,
     createNewReview,
     deleteReview,
     setTourUserIds,
-    updateReview
+    updateReview,
+    getReviewById
 };
