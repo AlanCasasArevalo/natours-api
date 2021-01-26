@@ -23,24 +23,15 @@ const getAllReviews = catchAsync(async (req, res, next) => {
     }
 });
 
-const createNewReview = catchAsync(async (req, res, next) => {
+
+const setTourUserIds = (req, res, next) => {
     // Allow nested routes
-    if(!req.body.tour) req.body.tour = req.params.tourId
-    if(!req.body.user) req.body.user = req.user.id
+    if (!req.body.tour) req.body.tour = req.params.tourId
+    if (!req.body.user) req.body.user = req.user.id
+    next()
+}
 
-    const newReview = await Review.create(req.body);
-
-    if (!newReview || typeof newReview === 'undefined') {
-        return next(new AppError('No reviews was founded', 404))
-    } else  {
-        res.status(201).json({
-            status: 'success',
-            data: {
-                review: newReview
-            }
-        })
-    }
-});
+const createNewReview = handlerFactory.createOne(Review)
 
 const deleteReview = handlerFactory.deleteOne(Review)
 
@@ -50,5 +41,6 @@ module.exports = {
     getAllReviews,
     createNewReview,
     deleteReview,
+    setTourUserIds,
     updateReview
 };

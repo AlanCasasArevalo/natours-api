@@ -36,7 +36,23 @@ const updateOne = Model => catchAsync(async (req, res, next) => {
     }
 });
 
+const createOne = Model => catchAsync(async (req, res, next) => {
+    const docModel = await Model.create(req.body);
+
+    if (!docModel || typeof docModel === 'undefined') {
+        return next(new AppError('No tour was founded', 404))
+    } else  {
+        res.status(201).json({
+            status: 'success',
+            data: {
+                tour: docModel
+            }
+        })
+    }
+});
+
 module.exports = {
     deleteOne,
-    updateOne
+    updateOne,
+    createOne
 }
