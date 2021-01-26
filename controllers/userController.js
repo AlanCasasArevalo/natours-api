@@ -11,22 +11,6 @@ const filterBodyRequest = (bodyToFilter, ...allowedFields) => {
     return bodyToReturn;
 };
 
-const getAllUsers = catchAsync(async (req, res, next) => {
-    const users = await User.find();
-
-    if (!users || typeof users === 'undefined') {
-        return next(new AppError('No tour was founded', 404))
-    } else {
-        res.status(200).json({
-            status: 'success',
-            results: users.length,
-            data: {
-                users
-            }
-        })
-    }
-});
-
 const updateMe = catchAsync(async (req, res, next) => {
     const password = req.body.password;
     const confirmPassword = req.body.confirmPassword;
@@ -73,7 +57,9 @@ const createNewUsers = catchAsync(async (req, res, next) => {
     next(new AppError('This route is not defined. Please use /signup instead', 404))
 });
 
-const getUsers = handlerFactory.getOneById(User)
+const getAllUsers = handlerFactory.getAll(User)
+
+const getUserById = handlerFactory.getOneById(User)
 
 // Do not update password with this endpoint
 const updateUsers = handlerFactory.updateOne(User)
@@ -84,7 +70,7 @@ module.exports = {
     getAllUsers,
     createNewUsers,
     updateUsers,
-    getUsers,
+    getUserById,
     deleteUsers,
     updateMe,
     deleteMe

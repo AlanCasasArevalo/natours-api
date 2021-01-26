@@ -1,31 +1,10 @@
 const Tour = require('./../models/tourModel');
 const AppError = require('./../utils/appError');
-const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('./../utils/catchAsync');
 
 const handlerFactory = require('../controllers/handlerFactory')
 
-const getAllTours = catchAsync(async (req, res, next) => {
-    const featureApi = new APIFeatures(Tour.find(), req.query)
-        .filter()
-        .sort()
-        .limit()
-        .pagination();
-
-    const tours = await featureApi.query;
-
-    if (!tours || typeof tours === 'undefined') {
-        return next(new AppError('No tour was founded', 404))
-    } else  {
-        res.status(200).json({
-            status: 'success',
-            results: tours.length,
-            data: {
-                tours
-            }
-        })
-    }
-});
+const getAllTours = handlerFactory.getAll(Tour)
 
 const getTour = handlerFactory.getOneById(Tour, { path: 'reviews' })
 

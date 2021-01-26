@@ -34,7 +34,7 @@ router.route('/')
     .post(userController.createNewUsers);
 
 router.route('/:id')
-    .get(userController.getUsers)
+    .get(userController.getUserById)
     .patch(userController.updateUsers)
     .delete(userController.deleteUsers);
 
