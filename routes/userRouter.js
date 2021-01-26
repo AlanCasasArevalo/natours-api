@@ -15,28 +15,31 @@ router
 router
     .patch('/resetPassword/:token', authController.resetPassword);
 
+router.use(authController.protect)
+
 router
     .patch('/updateMyPassword',
-        authController.protect,
-        authController.updatePassword);
+        authController.updatePassword
+    );
 
 router
     .get(
         '/me',
-        authController.protect,
         userController.getMe,
         userController.getUserById
     )
 
 router
      .patch('/updateMe',
-        authController.protect,
-        userController.updateMe)
+        userController.updateMe
+     )
 
 router
     .delete('/deleteMe',
-        authController.protect,
-        userController.deleteMe);
+        userController.deleteMe
+    )
+
+router.use(authController.restrictTo('admin'))
 
 router.route('/')
     .get(userController.getAllUsers)
