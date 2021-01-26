@@ -11,6 +11,11 @@ const filterBodyRequest = (bodyToFilter, ...allowedFields) => {
     return bodyToReturn;
 };
 
+const getMe = (req, res, next) => {
+    req.params.id = req.user.id
+    next()
+}
+
 const updateMe = catchAsync(async (req, res, next) => {
     const password = req.body.password;
     const confirmPassword = req.body.confirmPassword;
@@ -73,5 +78,6 @@ module.exports = {
     getUserById,
     deleteUsers,
     updateMe,
-    deleteMe
+    deleteMe,
+    getMe
 };

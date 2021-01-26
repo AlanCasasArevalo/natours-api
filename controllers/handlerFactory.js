@@ -61,7 +61,6 @@ const getOneById = (Model, populateOptions) => catchAsync(async (req, res, next)
             data: docModel
         })
     }
-
 });
 
 const getAll = Model => catchAsync(async (req, res, next) => {
@@ -88,7 +87,6 @@ const getAll = Model => catchAsync(async (req, res, next) => {
         })
     }
 });
-
 
 module.exports = {
     getAll,
