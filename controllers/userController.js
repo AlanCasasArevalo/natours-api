@@ -1,6 +1,7 @@
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
+const handlerFactory = require('../controllers/handlerFactory')
 
 const filterBodyRequest = (bodyToFilter, ...allowedFields) => {
     const bodyToReturn = {};
@@ -77,9 +78,8 @@ const getUsers = catchAsync(async (req, res, next) => {
 const updateUsers = catchAsync(async (req, res, next) => {
     next(new AppError('This route is not defined yet', 404))
 });
-const deleteUsers = catchAsync(async (req, res, next) => {
-    next(new AppError('This route is not defined yet', 404))
-});
+
+const deleteUsers = handlerFactory.deleteOne(User)
 
 module.exports = {
     getAllUsers,
