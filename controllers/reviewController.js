@@ -19,6 +19,11 @@ const getAllReviews = catchAsync(async (req, res, next) => {
 });
 
 const createNewReview = catchAsync(async (req, res, next) => {
+    // Allow nested routes
+    console.log(``)
+    if(!req.body.tour) req.body.tour = req.params.tourId
+    if(!req.body.user) req.body.user = req.user.id
+
     const newReview = await Review.create(req.body);
 
     if (!newReview || typeof newReview === 'undefined') {
