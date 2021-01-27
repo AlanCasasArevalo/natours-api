@@ -147,7 +147,7 @@ const getToursWithin = catchAsync(async (req, res, next) => {
     const tours = await Tour.find({
         startLocation: {
             $geoWithin: {
-                $centerSphere: [[longitude, latitude], radius ]
+                $centerSphere: [[longitude, latitude], radius]
             }
         }
     })
@@ -159,6 +159,45 @@ const getToursWithin = catchAsync(async (req, res, next) => {
     })
 });
 
+const getDistance = catchAsync(async (req, res, next) => {
+    const {latlng, unit} = req.params
+    const [latitude, longitude] = latlng.split(',')
+
+    if (!latitude || typeof latitude === 'undefined' || !longitude || typeof longitude === 'undefined') {
+        next(new AppError('Please provide latitude and longitude in format latitude, longitude', 400))
+    }
+
+    const multiplier = unit === 'mi' ? 0.000621371 : 0.001
+
+    const distances = await Tour.aggregate([
+        {
+            $geoNear: {
+                near: {
+                    type: 'Point',
+                    coordinates: [
+                        longitude * 1,
+                        latitude * 1
+                    ]
+                },
+                distanceField: 'distance',
+                distanceMultiplier: multiplier
+            }
+        },
+        {
+            $project: {
+                distance: 1,
+                name:1
+            }
+        }
+    ])
+
+    res.status(200).json({
+        status: 'success',
+        results: distances.length,
+        data: distances
+    })
+})
+
 module.exports = {
     getAllTours,
     createNewTour,
@@ -168,5 +207,6 @@ module.exports = {
     getTourStats,
     aliasTopTours,
     getMonthlyPlan,
-    getToursWithin
+    getToursWithin,
+    getDistance
 };

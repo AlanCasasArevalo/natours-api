@@ -32,6 +32,11 @@ router.route('/tours-within/:distance/center/:latlng/unit/:unit')
         tourController.getToursWithin
     )
 
+router.route('/distances/:latlng/unit/:unit')
+    .get(
+        tourController.getDistance
+    )
+
 router.route('/')
     .get(
         tourController.getAllTours

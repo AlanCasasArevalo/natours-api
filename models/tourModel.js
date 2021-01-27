@@ -181,9 +181,11 @@ tourSchema.post(/^find/, function (docs, next) {
 
 // AGGREGATION MIDDLEWARE this middleware is use to hide secret tour from all endpoint that could return a tour with secret tour to true.
 tourSchema.pre('aggregate', function (next) {
-    this.pipeline().unshift({
-        $match: {secretTour: {$ne: true}}
-    });
+    if (!this.pipeline()[0].hasOwnProperty('$geoNear')) {
+        this.pipeline().unshift({
+            $match: {secretTour: {$ne: true}}
+        });
+    }
     next();
 });
 
