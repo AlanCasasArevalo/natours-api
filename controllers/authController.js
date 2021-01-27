@@ -119,7 +119,7 @@ const restrictTo = (...roles) => {
         // roles is an array
         const rolesUserContained = roles.includes(req.user.role);
         if (!rolesUserContained && typeof rolesUserContained !== 'undefined') {
-            return new AppError('You do not have permission to use this functionality', 403)
+            return next(new AppError('You do not have permission to use this functionality', 403))
         } else {
             next()
         }
