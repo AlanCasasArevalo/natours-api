@@ -112,6 +112,12 @@ const tourSchema = new mongoose.Schema({
     toObject: {virtuals: true}
 });
 
+// If you put price with positive number 1 it will returns ascendant numbers
+// If you put price with negative number -1 it will returns descendent numbers
+// tourSchema.index({ price: 1 })
+tourSchema.index({ price: 1, ratingsAverage: -1})
+tourSchema.index({ slug: 1 })
+
 tourSchema.virtual('durationWeeks')
     .get(function () {
         return this.duration / 7
