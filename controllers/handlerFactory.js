@@ -75,7 +75,8 @@ const getAll = Model => catchAsync(async (req, res, next) => {
         .limit()
         .pagination();
 
-    const docModel = await featureApi.query.explain();
+    // const docModel = await featureApi.query.explain();
+    const docModel = await featureApi.query
 
     if (!docModel || typeof docModel === 'undefined') {
         return next(new AppError('No tour was founded', 404))
