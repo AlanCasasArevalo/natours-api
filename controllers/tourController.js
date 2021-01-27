@@ -6,7 +6,7 @@ const handlerFactory = require('../controllers/handlerFactory')
 
 const getAllTours = handlerFactory.getAll(Tour)
 
-const getTour = handlerFactory.getOneById(Tour, { path: 'reviews' })
+const getTour = handlerFactory.getOneById(Tour, {path: 'reviews'})
 
 const createNewTour = handlerFactory.createOne(Tour)
 
@@ -59,7 +59,7 @@ const getTourStats = catchAsync(async (req, res, next) => {
 
     if (!stats || typeof stats === 'undefined') {
         return next(new AppError('No tour was founded', 404))
-    } else  {
+    } else {
         res.status(200).json({
             status: 'success',
             message: 'Stats',
@@ -77,51 +77,51 @@ const aliasTopTours = (req, res, next) => {
     next()
 };
 const getMonthlyPlan = catchAsync(async (req, res, next) => {
-        const year = req.params.year * 1;
-        const plan = await Tour.aggregate([
-            {
-                $unwind: '$startDates'
-            },
-            {
-                $match: {
-                    startDates: {
-                        $gte: new Date(`${year}-01-01`),
-                        $lte: new Date(`${year}-12-31`)
-                    }
+    const year = req.params.year * 1;
+    const plan = await Tour.aggregate([
+        {
+            $unwind: '$startDates'
+        },
+        {
+            $match: {
+                startDates: {
+                    $gte: new Date(`${year}-01-01`),
+                    $lte: new Date(`${year}-12-31`)
                 }
-            },
-            {
-                $group: {
-                    _id: {$month: '$startDates'},
-                    numTourStarts: {$sum: 1},
-                    tours: {
-                        $push: '$name'
-                    }
+            }
+        },
+        {
+            $group: {
+                _id: {$month: '$startDates'},
+                numTourStarts: {$sum: 1},
+                tours: {
+                    $push: '$name'
                 }
-            },
-            {
-                $addFields: {month: '$_id'}
-            },
-            {
-                $project: {
-                    _id: 0
-                }
-            },
-            {
-                $sort: {
-                    _id: 1
-                }
-            },
+            }
+        },
+        {
+            $addFields: {month: '$_id'}
+        },
+        {
+            $project: {
+                _id: 0
+            }
+        },
+        {
+            $sort: {
+                _id: 1
+            }
+        },
 
-            // You could limit the response if you want
-            // {
-            //     $limit: 5
-            // }
-        ]);
+        // You could limit the response if you want
+        // {
+        //     $limit: 5
+        // }
+    ]);
 
     if (!plan || typeof plan === 'undefined') {
         return next(new AppError('No tour was founded', 404))
-    } else  {
+    } else {
         res.status(200).json({
             status: 'success',
             message: 'Stats',
@@ -130,6 +130,33 @@ const getMonthlyPlan = catchAsync(async (req, res, next) => {
             }
         })
     }
+});
+
+const getToursWithin = catchAsync(async (req, res, next) => {
+    // /tours-within/:distance/center/:latlong/unit/:unit
+    const {distance, latlng, unit} = req.params
+
+    const [latitude, longitude] = latlng.split(',')
+
+    if (!latitude || typeof latitude === 'undefined' || !longitude || typeof longitude === 'undefined') {
+        next(new AppError('Please provide latitude and longitude in format latitude, longitude', 400))
+    }
+
+    const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1
+
+    const tours = await Tour.find({
+        startLocation: {
+            $geoWithin: {
+                $centerSphere: [[longitude, latitude], radius ]
+            }
+        }
+    })
+
+    res.status(200).json({
+        status: 'success',
+        results: tours.length,
+        data: tours
+    })
 });
 
 module.exports = {
@@ -141,4 +168,5 @@ module.exports = {
     getTourStats,
     aliasTopTours,
     getMonthlyPlan,
+    getToursWithin
 };
