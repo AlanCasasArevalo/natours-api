@@ -32,15 +32,10 @@ const reviewSchema = new mongoose.Schema({
     toObject: {virtuals: true}
 })
 
+reviewSchema.index({ tour: 1, user: 1}, {unique: true })
+
 // QUERY MIDDLEWARE, this middleware is use it to hide tours with parameter secretTour to true
 reviewSchema.pre(/^find/, function (next) {
-    // this.populate({
-    //     path: 'tour',
-    //     select: 'name'
-    // }).populate({
-    //     path: 'user',
-    //     select: 'name photo'
-    // })
     this.populate({
         path: 'user',
         select: 'name photo'
@@ -78,7 +73,6 @@ reviewSchema.post('save', function (next) {
 
 reviewSchema.pre(/^findOneAnd/, async function (next) {
     this.review = await this.findOne()
-    console.log(``, this.review)
     next()
 })
 
