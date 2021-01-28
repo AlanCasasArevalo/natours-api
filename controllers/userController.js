@@ -48,7 +48,7 @@ const updateMe = catchAsync(async (req, res, next) => {
     console.log(``, req.body)
     const password = req.body.password;
     const confirmPassword = req.body.confirmPassword;
-    const id = req.body.id;
+    const id = req.user.id;
     if (password && typeof password !== 'undefined' ||
         confirmPassword && typeof confirmPassword !== 'undefined') {
         next(new AppError('This not for password update, please use /updateMyPassword', 400))
