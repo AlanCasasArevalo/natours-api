@@ -1,6 +1,67 @@
 const Tour = require('./../models/tourModel');
 const AppError = require('./../utils/appError');
 const catchAsync = require('./../utils/catchAsync');
+const multer = require('multer')
+const sharp = require('sharp')
+
+const multerStorage = multer.memoryStorage()
+
+const multerFilter = (req, file, callback) => {
+    if (file.mimetype.startsWith('image')) {
+        callback(null, true)
+    } else {
+        callback(new AppError('File passed is not an image, Please upload only images', 400), false)
+    }
+}
+
+const upload = multer({
+    storage: multerStorage,
+    fileFilter: multerFilter
+})
+
+const uploadTourImages = upload.fields([
+    {
+        name: 'imageCover',
+        maxCount: 1
+    },
+    {
+        name: 'images',
+        maxCount: 3
+    },
+])
+
+// Resize image square
+const resizeUserImage = catchAsync(async (req, res, next) => {
+    if (!req.files.imageCover || !req.files.images) return next()
+
+    const imageCoverFilename = `tour-${req.params.id}-${Date.now()}-cover.jpeg`
+    await sharp(req.files.imageCover[0].buffer)
+        .resize(2000, 1333)
+        .toFormat('jpeg', {})
+        .jpeg({
+            quality: 75
+        })
+        .toFile(`public/img/tours/${imageCoverFilename}`)
+
+    req.body.imageCover = imageCoverFilename
+
+    req.body.images = []
+
+    for (const file of req.files.images) {
+        let index = req.files.images.indexOf(file);
+        const imageFilename = `tour-${req.params.id}-${Date.now()}-${index + 1}.jpeg`
+        await sharp(req.files.images[index].buffer)
+            .resize(2000, 1333)
+            .toFormat('jpeg', {})
+            .jpeg({
+                quality: 75
+            })
+            .toFile(`public/img/tours/${imageFilename}`)
+
+        req.body.images.push(imageFilename)
+    }
+    next()
+})
 
 const handlerFactory = require('../controllers/handlerFactory')
 
@@ -69,6 +130,7 @@ const getTourStats = catchAsync(async (req, res, next) => {
         })
     }
 });
+
 const aliasTopTours = (req, res, next) => {
     req.query.limit = '5';
     req.query.sort = '-ratingAverage, price';
@@ -76,6 +138,7 @@ const aliasTopTours = (req, res, next) => {
 
     next()
 };
+
 const getMonthlyPlan = catchAsync(async (req, res, next) => {
     const year = req.params.year * 1;
     const plan = await Tour.aggregate([
@@ -208,5 +271,7 @@ module.exports = {
     aliasTopTours,
     getMonthlyPlan,
     getToursWithin,
+    uploadTourImages,
+    resizeUserImage,
     getDistance
 };
