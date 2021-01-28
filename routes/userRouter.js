@@ -31,6 +31,7 @@ router
 
 router
      .patch('/updateMe',
+        userController.uploadUserPhoto,
         userController.updateMe
      )
 

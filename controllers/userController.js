@@ -2,6 +2,33 @@ const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 const handlerFactory = require('../controllers/handlerFactory')
+const multer = require('multer')
+
+const multerStorage = multer.diskStorage({
+    destination: (req, file, callback)  => {
+        callback(null, 'public/img/users')
+    },
+    filename: (req, file, callback) => {
+        // user-userId-timestamp.jpeg
+        const extension = file.mimetype.split('/')[1]
+        callback(null, `user-${req.user.id}-${Date.now()}.${extension}`)
+    }
+})
+
+const multerFilter = (req, file, callback) => {
+    if (file.mimetype.startsWith('image')) {
+        callback(null, true)
+    } else {
+        callback(new AppError('File passed is not an image, Please upload only images', 400), false)
+    }
+}
+
+const upload = multer({
+    storage: multerStorage,
+    fileFilter: multerFilter
+})
+
+const uploadUserPhoto = upload.single('photo')
 
 const filterBodyRequest = (bodyToFilter, ...allowedFields) => {
     const bodyToReturn = {};
@@ -17,6 +44,8 @@ const getMe = (req, res, next) => {
 }
 
 const updateMe = catchAsync(async (req, res, next) => {
+    console.log(``, req.file)
+    console.log(``, req.body)
     const password = req.body.password;
     const confirmPassword = req.body.confirmPassword;
     const id = req.body.id;
@@ -78,6 +107,7 @@ module.exports = {
     getUserById,
     deleteUsers,
     updateMe,
+    uploadUserPhoto,
     deleteMe,
     getMe
 };
