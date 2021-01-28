@@ -54,6 +54,9 @@ const updateMe = catchAsync(async (req, res, next) => {
         next(new AppError('This not for password update, please use /updateMyPassword', 400))
     } else {
         const filterBody = filterBodyRequest(req.body, 'name', 'email');
+
+        if (req.file) filterBody.photo = req.file.filename
+
         const userToUpdate = await User.findByIdAndUpdate(id, filterBody, {
             new: true,
             runValidators: true
