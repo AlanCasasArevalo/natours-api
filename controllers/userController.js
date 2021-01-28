@@ -3,17 +3,20 @@ const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 const handlerFactory = require('../controllers/handlerFactory')
 const multer = require('multer')
+const sharp = require('sharp')
 
-const multerStorage = multer.diskStorage({
-    destination: (req, file, callback)  => {
-        callback(null, 'public/img/users')
-    },
-    filename: (req, file, callback) => {
-        // user-userId-timestamp.jpeg
-        const extension = file.mimetype.split('/')[1]
-        callback(null, `user-${req.user.id}-${Date.now()}.${extension}`)
-    }
-})
+// const multerStorage = multer.diskStorage({
+//     destination: (req, file, callback)  => {
+//         callback(null, 'public/img/users')
+//     },
+//     filename: (req, file, callback) => {
+//         // user-userId-timestamp.jpeg
+//         const extension = file.mimetype.split('/')[1]
+//         callback(null, `user-${req.user.id}-${Date.now()}.${extension}`)
+//     }
+// })
+
+const multerStorage = multer.memoryStorage()
 
 const multerFilter = (req, file, callback) => {
     if (file.mimetype.startsWith('image')) {
@@ -30,6 +33,21 @@ const upload = multer({
 
 const uploadUserPhoto = upload.single('photo')
 
+// Resize image square
+const resizeUserPhoto = catchAsync(async (req, res, next) => {
+    if (!req.file) return next()
+
+    req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`
+
+    await sharp(req.file.buffer).resize(500, 500)
+        .toFormat('jpeg', {})
+        .jpeg({
+            quality: 75
+        }).toFile(`public/img/users/${req.file.filename}`)
+
+    next()
+})
+
 const filterBodyRequest = (bodyToFilter, ...allowedFields) => {
     const bodyToReturn = {};
     Object.keys(bodyToFilter).forEach(element => {
@@ -44,8 +62,6 @@ const getMe = (req, res, next) => {
 }
 
 const updateMe = catchAsync(async (req, res, next) => {
-    console.log(``, req.file)
-    console.log(``, req.body)
     const password = req.body.password;
     const confirmPassword = req.body.confirmPassword;
     const id = req.user.id;
@@ -111,6 +127,7 @@ module.exports = {
     deleteUsers,
     updateMe,
     uploadUserPhoto,
+    resizeUserPhoto,
     deleteMe,
     getMe
 };
