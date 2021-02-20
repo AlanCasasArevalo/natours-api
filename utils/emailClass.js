@@ -7,7 +7,7 @@ class Email {
         this.userToSendEmail = user.email
         this.firstName = user.name.split(' ')[0]
         this.url = url
-        this.from = `YOUR_NAME <${process.env.EMAIL_FROM}>`
+        this.from = `Alan Casas <${process.env.EMAIL_FROM}>`
     }
 
     createTransport() {
@@ -16,10 +16,10 @@ class Email {
             return 1
         }
 
-        const transporter = nodemailer.createTransport({
+        const transporterMailTrap = nodemailer.createTransport({
             host: process.env.MAILTRAP_HOST,
             port: process.env.MAILTRAP_PORT,
-            secure: false,
+            // secure: false,
             auth: {
                 // type: 'login',
                 user: process.env.MAILTRAP_EMAIL_USERNAME,
@@ -27,12 +27,20 @@ class Email {
             }
         });
 
-        return transporter
+        const transporterGmail = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.GMAIL_EMAIL_USERNAME,
+                pass: process.env.GMAIL_EMAIL_PASSWORD
+            }
+        });
+
+        return transporterGmail
     }
 
     async sendEmail(template, subject) {
         // Render html based on a pug template
-        const html = pug.renderFile(`${__dirname}/../views/emails/${template}.pug`, {
+        const html = pug.renderFile(`${__dirname}/../views/email/${template}.pug`, {
             firstName: this.firstName,
             url: this.url,
             subject
@@ -52,7 +60,7 @@ class Email {
 
     }
 
-    async sendWelcome(template, subject) {
+    async sendWelcome() {
         await this.sendEmail('welcome', 'Welcome to the Natours family')
     }
 }
