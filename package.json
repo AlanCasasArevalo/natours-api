@@ -19,6 +19,7 @@
     "express-rate-limit": "^5.2.3",
     "helmet": "^4.4.1",
     "hpp": "^0.2.3",
+    "html-to-text": "^7.0.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.8.9",
     "morgan": "^1.9.1",
@@ -40,7 +41,8 @@
     "eslint-plugin-prettier": "^3.1.2",
     "eslint-plugin-react": "^7.18.0",
     "nodemon": "^1.19.1",
-    "prettier": "^1.19.1"
+    "prettier": "^1.19.1",
+    "pug": "^3.0.0"
   },
   "engines": {
     "node": ">=10.0.0"
